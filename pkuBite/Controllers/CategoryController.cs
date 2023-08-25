@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using pkuBite.Data;
 using pkuBite.Dto;
 using pkuBite.Models;
 
 namespace pkuBite.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoryController : Controller
@@ -77,7 +79,7 @@ namespace pkuBite.Controllers
             _context.Categories.Remove(category);
             _context.SaveChanges();
             return Ok("Category deleted");
-        }
+        }     
 
     }
 }

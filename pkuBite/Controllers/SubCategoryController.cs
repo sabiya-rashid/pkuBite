@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using pkuBite.Data;
 using pkuBite.Dto;
 using pkuBite.Models;
@@ -19,6 +20,8 @@ namespace pkuBite.Controllers
         public IActionResult GetAllSubCategories()
         {
             List<SubCategory> subCategories = _context.SubCategories.ToList();
+            if(subCategories == null || subCategories.Count == 0)
+                return NotFound();
             return Ok(subCategories);
         }
         [HttpPost]
@@ -30,6 +33,9 @@ namespace pkuBite.Controllers
                 return BadRequest(ModelState);
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+            var flag = _context.Categories.Find(subCategoryDto.CategoryId);
+            if (flag == null)   
+                return BadRequest("Category with this doesn't exist");
             var subCategory = new SubCategory
             {
                 Name = subCategoryDto.Name,
@@ -49,8 +55,17 @@ namespace pkuBite.Controllers
             if (subCategory == null)
                 return NotFound(ModelState);
             subCategory.Name = subCategoryDto.Name;
+            subCategory.CategoryId = subCategoryDto.CategoryId;
             _context.SaveChanges();
             return Ok(subCategory);
+        }
+        [HttpGet("categoryId")]
+        public IActionResult GetSubCategoryByCAtegoryId(int id)
+        {
+            var subCategories = _context.SubCategories.Include(s => s.Category).Where(f => f.CategoryId == id).ToList();
+            if (subCategories == null)
+                return NotFound("No subcategories with this id");
+            return Ok(subCategories);
         }
     }
 }
