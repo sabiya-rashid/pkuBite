@@ -11,8 +11,8 @@ using pkuBite.Data;
 namespace pkuBite.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230822090045_initialDB")]
-    partial class initialDB
+    [Migration("20230824081311_removedPreAndAddedNew")]
+    partial class removedPreAndAddedNew
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -60,9 +60,6 @@ namespace pkuBite.Migrations
                     b.Property<int>("SubCategoryId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Sub_Cat")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("SubCategoryId");
@@ -78,10 +75,7 @@ namespace pkuBite.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Cat_id")
-                        .HasColumnType("int");
-
-                    b.Property<int>("CategoryId")
+                    b.Property<int>("Category_id")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -90,7 +84,7 @@ namespace pkuBite.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("Category_id");
 
                     b.ToTable("SubCategories");
                 });
@@ -98,7 +92,7 @@ namespace pkuBite.Migrations
             modelBuilder.Entity("pkuBite.Models.Food", b =>
                 {
                     b.HasOne("pkuBite.Models.SubCategory", "SubCategory")
-                        .WithMany("Foods")
+                        .WithMany()
                         .HasForeignKey("SubCategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -110,16 +104,11 @@ namespace pkuBite.Migrations
                 {
                     b.HasOne("pkuBite.Models.Category", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoryId")
+                        .HasForeignKey("Category_id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("pkuBite.Models.SubCategory", b =>
-                {
-                    b.Navigation("Foods");
                 });
 #pragma warning restore 612, 618
         }
