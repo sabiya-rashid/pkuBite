@@ -1,190 +1,100 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Azure;
+﻿
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using pkuBite.Data;
-using pkuBite.DTO;
-using pkuBite.Interfaces;
-using pkuBite.Models;
-using pkuBite.Repositories;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using pkuBite.Common.DTO;
+using pkuBite.Services.IServices;
+using pkuBite.Models.Models;
+using AutoWrapper.Wrappers;
 
 namespace pkuBite.Controllers
 {
     [Route("api/food")]
     public class FoodController : Controller
     {
-        //private readonly DataContext _db;
+        private readonly IItem _itemService;
+        //private readonly IFeatures<Food> _featuresRepository;
+        //private readonly IRepository<Food> _repository;
 
-        //public FoodController(DataContext db)
-        //{
-        //    _db = db;
-        //}
-
-        private readonly IItems _itemRepository;
-        private readonly IFeatures<Food> _featuresRepository;
-
-        public FoodController(IItems itemRepository, IFeatures<Food> featuresRepository)
+        public FoodController(IItem itemService)
         {
-            _itemRepository = itemRepository;
-            _featuresRepository = featuresRepository;
+            _itemService = itemService;
+            //_featuresRepository = featuresRepository;
+            //_repository = repository;
         }
 
         // ----- GET ALL ITEMS ---- //
-        [HttpGet]
-        public IActionResult GetItems(
+        [HttpGet("GetAll")]
+        public ApiResponse GetItems(
             [FromQuery] string? filter,
             [FromQuery] string? sort,
             [FromQuery] int pageNo = 1,
             [FromQuery] int pageSize = 5)
         {
-            IQueryable<Food> items = _itemRepository.GetAllItems();
+            return _itemService.GetAllItems(filter, sort, pageNo, pageSize);
+        }
 
-            items =  _featuresRepository.Filter(items, filter);
-            items = _featuresRepository.Sort(items, sort);
-            items = _featuresRepository.Pagination(items, pageNo, pageSize);
+        // -----  GET ITEM BY ID ----- //
 
-            var response = new
-            {
-                StatusCode = 201,
-                Message = "Success",
-                Data = items
-            };
+        [HttpGet("GetById{Id}")]
+        public ApiResponse GetItemById(int Id)
+        {
+            return _itemService.GetById(Id);
+        }
 
-            return new ObjectResult(response)
-            {
-             StatusCode = StatusCodes.Status200OK
-            };
-    }
 
         // -----  GET ITEM BY SUB-CATEGORY ID ----- //
 
-        [HttpGet("{SubcategoryId}")]
+        [HttpGet("GetBySubCategoryId{SubcategoryId}")]
         public IEnumerable<Food> GetItemsBySubcategory(int SubcategoryId)
         {
-             return _itemRepository.GetItemsBySubCategoryId(SubcategoryId);
-            //Foods.Include(c => c.SubCategory).Where(i => i.SubCategoryId == SubcategoryId);
+             return _itemService.GetItemsBySubCategoryId(SubcategoryId);
         }
+
 
         // --- CREATE A NEW ITEM ---- //
         [Authorize]
-        [HttpPost]
-        public IActionResult CreateItem([FromBody]FoodDTO foodDTO)
+        [HttpPost("Create")]
+        public ApiResponse CreateItem([FromBody] Common.DTO.FoodDTO foodDTO)
         {
-            var flag = _itemRepository.Find(foodDTO.SubCategoryId);
-            //var flag = _db.SubCategories.Find(foodDTO.SubCategoryId);
-            if (foodDTO == null || flag == null)
-            {
-                return BadRequest("Body or Subcategory doesnot exist");
-            }
-
-            var foodItem = new Food
-            {
-                Name = foodDTO.Name,
-                Description = foodDTO.Description,
-                SubCategoryId = foodDTO.SubCategoryId,
-            };
-
-            var saved = _itemRepository.CreateItem(foodItem);
-
-            if(saved == false)
-            {
-                return BadRequest("Something went wrong while creating item");
-            }
-            var response = new
-            {
-                StatusCode= 201,
-                Message = "Food Item Added",
-                Data = foodItem
-            };
-            //_db.Foods.Add(foodItem);
-            //_db.SaveChanges();
-
-            return new ObjectResult(response)
-            {
-                StatusCode = StatusCodes.Status201Created
-            };
+            return _itemService.Create(foodDTO);
         }
 
 
          //--- UPDATE ITEM ----- //
         [Authorize]
-        [HttpPut("{ItemId}")]
-        public IActionResult UpdateItem(int ItemId, [FromBody] FoodDTO foodDTO)
+        [HttpPut("Upate{ItemId}")]
+        public ApiResponse UpdateItem(int ItemId, [FromBody] Common.DTO.FoodDTO foodDTO)
         {
-            var item = _itemRepository.Find(ItemId);
-            var flag = _itemRepository.FindSubCategory(foodDTO.SubCategoryId);
+            var response = _itemService.GetById(ItemId);
 
-            if (item == null || flag == null)
+            if (response.IsError is true)
             {
-                return BadRequest("Item or Subcategory doesn't exist");
+                return new ApiResponse { Message = response.Message, StatusCode = response.StatusCode };
             }
-            var foodItem = new Food
+            else
             {
-                Name = foodDTO.Name,
-                Description = foodDTO.Description,
-                SubCategoryId = foodDTO.SubCategoryId
-            };
-
-            var saved = _itemRepository.UpdateItem(foodItem);
-
-            if (saved == false)
-            {
-                return BadRequest("Something went wrong while creating item");
+                return _itemService.Update(foodDTO);
             }
-
-            var response = new
-            {
-                StatusCode = 202,
-                Message = "Food Item Added",
-                Data = foodItem
-            };
-
-            //_db.Foods.Update(itemObj);
-            //_db.SaveChanges();
-            return new ObjectResult(response)
-            {
-                StatusCode = StatusCodes.Status202Accepted
-            };
         }
 
         // ------ DELETE ITEM ----- //
 
         [Authorize(Roles = "admin")]
-        [HttpDelete("{ItemId}")]
-        public IActionResult DeleteItem(int ItemId)
+        [HttpDelete("Delete{ItemId}")]
+        public ApiResponse DeleteItem(int ItemId)
         {
-            var item = _itemRepository.Find(ItemId);
-            if (item == null )
+            var response = _itemService.GetById(ItemId);
+
+            if (response.IsError is true)
             {
-                return BadRequest("Item doesn't exist");
+                return new ApiResponse { Message = response.Message, StatusCode = response.StatusCode };
             }
-           
-            var saved = _itemRepository.DeleteItem(item);
-
-            if (saved == false)
+            else
             {
-                return BadRequest("Something went wrong while creating item");
+                Food food = (Food)response.Result;
+                _itemService.Delete(food);
+                return new ApiResponse { Message = response.Message, StatusCode = response.StatusCode };
             }
-
-            var response = new
-            {
-                StatusCode = 204,
-                Message = "Food Item Deleted",
-                Data = item
-            };
-
-            //_db.Foods.Update(itemObj);
-            //_db.SaveChanges();
-            return new ObjectResult(response)
-            {
-                StatusCode = StatusCodes.Status204NoContent
-            };
         }
     }
 }

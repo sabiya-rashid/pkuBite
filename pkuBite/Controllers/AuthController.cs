@@ -1,18 +1,11 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using pkuBite.Data;
-using pkuBite.DTO;
-using pkuBite.Models;
-
-// For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using pkuBite.Data.Data;
+using pkuBite.Common.DTO;
+using pkuBite.Models.Models;
 
 namespace pkuBite.Controllers
 {
@@ -30,26 +23,26 @@ namespace pkuBite.Controllers
             _configuration = configuration;
         }
 
+
         [HttpPost]
         [Route("/login")]
         public IActionResult Login([FromBody] LoginDTO loginDTO)
         {
-            if (loginDTO.Email == null || loginDTO.Password == null)
-            {
-                return BadRequest("please enter email and password");
-            }
+            //if (loginDTO.Email == null || loginDTO.Password == null)
+            //{
+            //    return BadRequest("please enter email and password");
+            //}
 
             var user = _db.Users.FirstOrDefault(u=>u.email.ToLower() == loginDTO.Email.ToLower());
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginDTO.Password, user.passwordHash))
             {
-                return BadRequest("Email or passwprd is incorrect");
+                return BadRequest("Email or password is incorrect");
             }
 
             var token = CreateToken(user);
 
             var response = new
             {
-                StatusCode = 202,
                 Message = "User logged in succesfully",
                 Data = user,
                 Token = token
@@ -80,8 +73,8 @@ namespace pkuBite.Controllers
             {
                 email = userDTO.Email,
                 passwordHash = BCrypt.Net.BCrypt.HashPassword(userDTO.Password),
-                Role = userDTO.Role ?? "User"
-        };
+                Role = "User"
+            };
 
             _db.Users.Add(newUser);
             _db.SaveChanges();
@@ -109,13 +102,14 @@ namespace pkuBite.Controllers
 
 
         // -------- Generate the JWT Token ---- //
+
         private string CreateToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:key"]));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var claims = new[]
             {
-                    new Claim(ClaimTypes.Email, user.email),
+                    new Claim(ClaimTypes.Name, user.email),
                     new Claim(ClaimTypes.Role, user.Role.ToLower()),
             };
             var token = new JwtSecurityToken(

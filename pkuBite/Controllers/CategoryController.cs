@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using pkuBite.Data;
-using pkuBite.DTO;
-using pkuBite.Interfaces;
-using pkuBite.Models;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using pkuBite.Services.IServices;
+using pkuBite.Models.Models;
+using AutoWrapper.Wrappers;
 
 namespace pkuBite.Controllers
 {
@@ -17,78 +12,86 @@ namespace pkuBite.Controllers
     [Route("api/Category")]
     public class CategoryController : ControllerBase
     {
-        //private readonly DataContext _db;
-        private readonly ICategory _categoryRepository;
-        private readonly IFeatures<Category> _featuresRepository;
+     
+        private readonly ICategory _category;
 
-        //public CategoryController(DataContext db, ICategory categoryRepository)
-        public CategoryController(ICategory categoryRepository, IFeatures<Category> featuresRepository)
-
+        public CategoryController(ICategory category)
         {
-            //_db = db;
-            _categoryRepository = categoryRepository;
-            _featuresRepository = featuresRepository;
+            _category = category;
         }
 
         // --- GET ALL CATEGORIES --- //
        
-        [HttpGet]
-        public IActionResult GetCategories(
+        [HttpGet("GetAll")]
+        public ApiResponse GetCategories(
             [FromQuery] string? filter,
             [FromQuery] string? sort,
             [FromQuery] int pageNo = 1,
             [FromQuery] int pageSize= 5)
         {
-          
-            IQueryable<Category> categories = _categoryRepository.GetAllCategories();
-
-            categories =  _featuresRepository.Filter(categories, filter);
-            categories = _featuresRepository.Sort(categories, sort);
-            categories = _featuresRepository.Pagination(categories, pageNo, pageSize);
-
-            var response = new
-            {
-                StatusCode = 201,
-                Message = "Success",
-                Data = categories
-            };
-
-            return new ObjectResult(response)
-            {
-                StatusCode = StatusCodes.Status200OK
-            };
-            //return _db.Categories;
+            return _category.GetAllCategories(filter, sort, pageNo, pageSize);
         }
+
+
+        // -----  GET ITEM BY ID ----- //
+
+        [HttpGet("GetBy{Id}")]
+        public ApiResponse GetItemById(int Id)
+        {
+            ApiResponse response = _category.GetById(Id);
+            if(response.IsError is true)
+            {
+                return new ApiResponse { Message = response.Message, StatusCode = response.StatusCode };
+            }
+            else
+            {
+                return new ApiResponse(response);
+            }
+        }
+
 
         // --- CREATE NEW CATEGORIES --- //
         [Authorize]
-        [HttpPost]
-        public IActionResult CreateCategory([FromBody] Category category)
+        [HttpPost("Create")]
+        public ApiResponse CreateCategory([FromBody] Category category)
         {
+            return _category.Create(category);
+        }
 
-            if (category == null)
+        // ----- UPDATE SUB-CATEGORY ---- //
+        [Authorize]
+        [HttpPut("Update{Id}")]
+        public ApiResponse UpdateSubCategory(int Id, [FromBody] Category category)
+        {
+           var response = _category.GetById(Id);
+
+            if (response.IsError is true)
             {
-                return BadRequest("Body cant be null");
+                return new ApiResponse { Message = response.Message, StatusCode = response.StatusCode };
             }
-
-            var saved = _categoryRepository.CreateCategory(category);
-
-            var response = new
+            else
             {
-                StatusCode = 201,
-                Message = "Food Item Added",
-                saved,
-                Data = category
-            };
+                return _category.Update(category);
+            }
+        }
 
-             
-            //_db.Categories.Add(category);
-            //_db.SaveChanges();
+        // ----- DELETE SUB-CATEGORY ---- //
+        [Authorize(Roles = "admin")]
+        [HttpDelete("Delete{Id}")]
+        public ApiResponse Delete(int Id)
+        {
+            var response = _category.GetById(Id);
 
-            return new ObjectResult(response)
+            if (response.IsError is true)
             {
-                StatusCode = StatusCodes.Status201Created
-            };
+                return new ApiResponse { Message = response.Message, StatusCode = response.StatusCode };
+            }
+            else
+            {
+                Category category = (Category)response.Result;
+                _category.Delete(category);
+                return new ApiResponse { Message = response.Message, StatusCode = response.StatusCode };
+            }
         }
     }
 }
