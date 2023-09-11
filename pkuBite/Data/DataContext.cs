@@ -3,7 +3,7 @@ using pkuBite.Models;
 
 namespace pkuBite.Data
 {
-    public class DataContext : DbContext
+    public class DataContext : Microsoft.EntityFrameworkCore.DbContext
     {
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {

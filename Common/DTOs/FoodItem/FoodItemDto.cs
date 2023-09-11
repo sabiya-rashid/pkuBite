@@ -1,6 +1,13 @@
-﻿namespace pkuBite.Dto
+﻿using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Common.DTOs.FoodItem
 {
-    public class FoodDto
+    public class FoodItemDto
     {
         public int Id { get; set; }
         public string Name { get; set; }

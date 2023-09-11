@@ -1,9 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Models;
+using Models.Base;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace pkuBite.Models
 {
-    public class Food : Base
+    public class FoodItem : BaseModel
     {
         [Key]
         public int Id { get; set; }

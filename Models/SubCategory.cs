@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Models.Base;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace pkuBite.Models
 {
-    public class SubCategory : Base
+    public class SubCategory : BaseModel
     {
         [Key]
         public int Id { get; set; }
