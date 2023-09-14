@@ -2,6 +2,7 @@
 using Common.DTOs.Category;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Models.Base;
+using pkuBite.Models;
 using Repository.Repository;
 using Services.IServices;
 using System;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Services.Services
 {
-    public class CategoryServices<Category> : ICategoryServices<Category>
+    public class CategoryServices : ICategoryServices
     {
         private readonly IRepository<Category> _repository;
         public CategoryServices(IRepository<Category> repository)
@@ -41,9 +42,9 @@ namespace Services.Services
             return Task.FromResult(res);
         }
 
-        public Task<ApiResponse> GetCategory(int id)
+        public async Task<ApiResponse> GetCategory(int id)
         {
-            var category = _repository.GetEntity(id);
+            var category = _repository.EntityExists(id);
             if (category == null)
             {
                 var response = new ApiResponse
@@ -51,20 +52,22 @@ namespace Services.Services
                     StatusCode = 404,
                     Message = "No category fond with this Id"
                 };
+                return await Task.FromResult(response);
             }
-            var result = new ApiResponse
+            var result = _repository.GetEntity(id);
+            var res = new ApiResponse
             {
                 StatusCode = 200,
                 Message = "Category found",
-                Result = category
+                Result = result
             };
-            return Task.FromResult<ApiResponse>(result);
+            return await Task.FromResult<ApiResponse>(res);
         }
 
-        public Task<ApiResponse> Remove(Category category)
+        public Task<ApiResponse> Remove(int id)
         {
-            var response = _repository.DeleteEntity(category);
-            if (!response)
+            var category = _repository.EntityExists(id);
+            if (category == null)
             {
                 var res = new ApiResponse
                 {
@@ -73,17 +76,52 @@ namespace Services.Services
                 };
                 return Task.FromResult(res);
             }
+            var response = _repository.DeleteEntity(category);
             var result = new ApiResponse
             {
                 StatusCode = 200,
-                Message="Category deleted successfully"
+                Message = "Category deleted successfully"
             };
             return Task.FromResult((ApiResponse)result);
         }
 
-        public Task<ApiResponse> UpdateOrAdd(CategoryDto category)
+        public async Task<ApiResponse> UpdateOrAdd(CategoryDto category)
         {
-            throw new NotImplementedException();
+            if (category == null)
+                throw new ArgumentNullException("category");
+            var payload = new Category
+            {
+                Name = category.Name
+            };
+            var cat = _repository.CreateEntity(payload);
+            var response = new ApiResponse
+            {
+                StatusCode = 200,
+                Message = "Category added successfully"
+            };
+            return await Task.FromResult<ApiResponse>(response);
+        }
+
+        public async Task<ApiResponse> Update(CategoryDto category)
+        {
+            var cat = _repository.EntityExists(category.Id);
+            if (cat == null)
+            {
+                var res = new ApiResponse
+                {
+                    StatusCode = 404,
+                    Message = "No category found with this id"
+                };
+                return await Task.FromResult(res);
+            }
+            cat.Name = category.Name;
+            var result = _repository.UpdateEntity(cat);
+            var response = new ApiResponse
+            {
+                StatusCode = 200,
+                Message = "Category updated successfully"
+            };
+            return await Task.FromResult<ApiResponse>(response);
         }
     }
 }

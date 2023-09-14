@@ -13,10 +13,10 @@ namespace Repository.Repository
     {
         private readonly DataContext _context;
         private readonly DbSet<T> _dbSet;
-        public Repository(DataContext context, DbSet<T> dbSet)
+        public Repository(DataContext context)
         {
             _context = context;
-            _dbSet = dbSet;
+            _dbSet = context.Set<T>();
         }
         public bool CreateEntity(T entity)
         {
@@ -27,8 +27,8 @@ namespace Repository.Repository
 
         public bool DeleteEntity(T entity)
         {
-            _dbSet.Remove(entity);
-            return true;
+            _context.Remove(entity);
+            return Save();
         }
 
         public T EntityExists(int id)

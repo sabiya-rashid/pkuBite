@@ -4,11 +4,11 @@ namespace pkuBite.Interfaces
 {
     public interface IFoodRepository
     {
-        ICollection<Food> GetFoodItems();
-        Food GetFood(int id);
+        ICollection<FoodItem> GetFoodItems();
+        FoodItem GetFood(int id);
         bool FoodExists(int id);
         bool Delete(int id);
-        bool UpdateFoodItem(Food foodItem);
+        bool UpdateFoodItem(FoodItem foodItem);
         bool Save();
     }
 }

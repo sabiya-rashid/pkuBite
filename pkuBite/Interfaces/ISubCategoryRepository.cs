@@ -6,7 +6,7 @@ namespace pkuBite.Interfaces
     {
         ICollection<SubCategory> GetSubCategories();
         SubCategory GetSubCategory(int id);
-        ICollection<Food> GetFoodBySubcategory(int subCategoryId);
+        ICollection<FoodItem> GetFoodBySubcategory(int subCategoryId);
         bool SubCategoryExists(int id);
         bool CreateSubCategory(SubCategory category);
         bool Save();

@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoWrapper.Wrappers;
+using Common.DTOs.SubCategory;
+using DbContext;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using pkuBite.Data;
-using pkuBite.Dto;
 using pkuBite.Models;
+using Services.IServices;
 
 namespace pkuBite.Controllers
 {
@@ -10,62 +12,44 @@ namespace pkuBite.Controllers
     [ApiController]
     public class SubCategoryController : Controller
     {
-        private readonly DataContext _context;
+        private readonly ISubcategoryServices _subcategoryServices;
 
-        public SubCategoryController(DataContext context)
+        public SubCategoryController(ISubcategoryServices subcategoryServices)
         {
-            _context = context;  
+            _subcategoryServices = subcategoryServices;
+        }
+        [HttpGet("GetAll")]
+        public async Task<ApiResponse> GetAll() 
+        {
+            return await _subcategoryServices.GetAllSubcategories();
         }
         [HttpGet]
-        public IActionResult GetAllSubCategories()
+        public async Task<ApiResponse> GetSubcategory(int id)
         {
-            List<SubCategory> subCategories = _context.SubCategories.ToList();
-            if(subCategories == null || subCategories.Count == 0)
-                return NotFound();
-            return Ok(subCategories);
+            return await _subcategoryServices.GetSubcategory(id);
         }
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult CreateSubCategory([FromBody] SubCategoryDto subCategoryDto)
+        public async Task<ApiResponse> CreateSubcategory(SubCategoryDto subcategory)
         {
-            if (subCategoryDto == null)
-                return BadRequest(ModelState);
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            var flag = _context.Categories.Find(subCategoryDto.CategoryId);
-            if (flag == null)   
-                return BadRequest("Category with this doesn't exist");
-            var subCategory = new SubCategory
-            {
-                Name = subCategoryDto.Name,
-                CategoryId = subCategoryDto.CategoryId                   
-            };
-            _context.SubCategories.Add(subCategory);
-            _context.SaveChanges();
-
-            return Ok();
+            return await _subcategoryServices.Create(subcategory);
         }
-        [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult UpdateSubCategory(int id, [FromBody] SubCategoryDto subCategoryDto)
+        [HttpPut]
+        public async Task<ApiResponse> UpdateSubcategory(SubCategoryDto subcategory)
         {
-            var subCategory = _context.SubCategories.FirstOrDefault(c => c.Id == id);
-            if (subCategory == null)
-                return NotFound(ModelState);
-            subCategory.Name = subCategoryDto.Name;
-            subCategory.CategoryId = subCategoryDto.CategoryId;
-            _context.SaveChanges();
-            return Ok(subCategory);
+            return await _subcategoryServices.Update(subcategory);
         }
-        [HttpGet("categoryId")]
-        public IActionResult GetSubCategoryByCAtegoryId(int id)
+        [HttpDelete]
+        public async Task<ApiResponse> DeleteSubcategory(int id)
         {
-            var subCategories = _context.SubCategories.Include(s => s.Category).Where(f => f.CategoryId == id).ToList();
-            if (subCategories == null)
-                return NotFound("No subcategories with this id");
-            return Ok(subCategories);
+            return await _subcategoryServices.Remove(id);
         }
+        //[HttpGet("categoryId")]
+        //public IActionResult GetSubCategoryByCAtegoryId(int id)
+        //{
+        //    var subCategories = _context.SubCategories.Include(s => s.Category).Where(f => f.CategoryId == id).ToList();
+        //    if (subCategories == null)
+        //        return NotFound("No subcategories with this id");
+        //    return Ok(subCategories);
+        //}
     }
 }

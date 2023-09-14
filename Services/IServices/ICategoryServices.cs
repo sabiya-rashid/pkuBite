@@ -9,11 +9,12 @@ using System.Threading.Tasks;
 
 namespace Services.IServices
 {
-    public interface ICategoryServices<T>
+    public interface ICategoryServices
     {
         Task<ApiResponse> GetCategories();
         Task<ApiResponse> GetCategory(int id);
         Task<ApiResponse> UpdateOrAdd(CategoryDto category);
+        Task<ApiResponse> Update(CategoryDto category);
         Task<ApiResponse> Remove(int id);
     }
 }

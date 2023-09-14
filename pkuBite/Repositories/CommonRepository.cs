@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using pkuBite.Data;
+﻿using DbContext;
+using Microsoft.EntityFrameworkCore;
+using Models.Base;
 using pkuBite.Interfaces;
-using pkuBite.Models;
 
 namespace pkuBite.Repositories
 {
-    public class CommonRepository<T> : ICommonRepository<T> where T : Base
+    public class CommonRepository<T> : ICommonRepository<T> where T : BaseModel
     {
         private readonly DataContext _context;
         private readonly DbSet<T> _dbSet;
