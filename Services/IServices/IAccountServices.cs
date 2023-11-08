@@ -11,6 +11,6 @@ namespace Services.IServices
     public interface IAccountServices
     {
         Task<ApiResponse> Register(RegisterDto registerDto);
-        Task<ApiResponse> Login(RegisterDto registerDto);
+        Task<ApiResponse> Login(string username, string password);
     }
 }

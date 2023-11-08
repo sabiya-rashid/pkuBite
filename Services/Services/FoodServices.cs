@@ -116,28 +116,28 @@ namespace Services.Services
 
         public async Task<ApiResponse> GetFoodItemBySub(int subCategoryId)
         {
-            var fooditem = _context.Foods.Include(s => s.SubCategory).Where(f => f.SubCategoryId == subCategoryId).ToList();
-            if (fooditem == null)
+            var subcat = _context.SubCategories.Where(s=> s.Id == subCategoryId).FirstOrDefault();
+            if (subcat==null)
             {
                 var response = new ApiResponse
                 {
-                    StatusCode = 200,
-                    Message = "No foods"
+                    StatusCode = 400,
+                    Message = "No Subcategory"
                 };
                 return await Task.FromResult<ApiResponse>(response);
             }
+            var foodItem = _context.Foods.Where(f=> f.SubCategoryId==subCategoryId).ToList();
             var res = new ApiResponse
             {
                 StatusCode = 200,
-                Message = "Foods retrieved successfully"
+                Message = "Foods retrieved successfully",
+                Result = foodItem
             };
             return await Task.FromResult(res);
-
         }
 
         public Task<ApiResponse> Remove(int id)
         {
-
             var foodItem = _repository.EntityExists(id);
             if (foodItem == null)
             {

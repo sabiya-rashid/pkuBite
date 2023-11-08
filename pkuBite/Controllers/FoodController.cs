@@ -34,30 +34,15 @@ namespace pkuBite.Controllers
         public async Task<ApiResponse> CreateFoodItem([FromForm] FoodItemDto foodDto)
         {
             return await _foodservices.Create(foodDto);
-        }        
+        }      
 
-        //[HttpPut("{id}")]       
-        //public IActionResult UpdateSubCategory(int id, [FromBody] FoodItemDto foodDto)
-        //{
-        //    var foodItem = _repository.EntityExists(id);
-        //    var flag = _context.Foods.Find(foodDto.SubcategoryId);
-        //    if (flag == null)
-        //        return BadRequest("Subcategory with this id doesn't exist");
-        //    if (foodItem == null)
-        //        return NotFound(ModelState);
-        //    foodItem.Name = foodDto.Name;
-        //    foodItem.SubCategoryId = foodDto.SubcategoryId;
-        //    _context.SaveChanges();
-        //    return Ok(foodItem);
-        //}
-
-        [HttpPost("{id}")]
-        public async Task<ApiResponse> UpdateFootItem([FromBody] FoodItemDto foodDto)
+        [HttpPut]
+        public async Task<ApiResponse> UpdateFootItem([FromForm] FoodItemDto foodDto)
         {
             return await _foodservices.Update(foodDto);
         }
 
-        [HttpGet("subCategoryId")]
+        [HttpGet("GetBySubcategory")]
         public async Task<ApiResponse> GetFoodItemsBySubCategoryId(int id)
         {
            return await _foodservices.GetFoodItemBySub(id);

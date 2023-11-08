@@ -20,6 +20,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ICategoryServices, CategoryServices>();
 builder.Services.AddScoped<IFoodServices, FoodServices>();
 builder.Services.AddScoped<ISubcategoryServices, SubcategoryServices>();
+builder.Services.AddScoped<IAccountServices, AccountServices>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 builder.Services.AddDbContext<DataContext>(options =>
@@ -37,7 +38,10 @@ builder.Services.AddAuthentication().AddJwtBearer(options =>
                 builder.Configuration.GetSection("AppSettings:Token").Value!))
     };
 });
-
+builder.Services.AddMvc().AddJsonOptions(options => {
+    options.JsonSerializerOptions.PropertyNamingPolicy = null; 
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

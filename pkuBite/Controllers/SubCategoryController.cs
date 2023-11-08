@@ -43,13 +43,10 @@ namespace pkuBite.Controllers
         {
             return await _subcategoryServices.Remove(id);
         }
-        //[HttpGet("categoryId")]
-        //public IActionResult GetSubCategoryByCAtegoryId(int id)
-        //{
-        //    var subCategories = _context.SubCategories.Include(s => s.Category).Where(f => f.CategoryId == id).ToList();
-        //    if (subCategories == null)
-        //        return NotFound("No subcategories with this id");
-        //    return Ok(subCategories);
-        //}
+        [HttpGet("categoryId")]
+        public async Task<ApiResponse> GetSubCategoryByCAtegoryId(int id)
+        {
+          return await _subcategoryServices.GetSubcategoryByCat(id);
+        }
     }
 }

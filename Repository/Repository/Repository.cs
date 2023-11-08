@@ -1,6 +1,7 @@
 ﻿using DbContext;
 using Microsoft.EntityFrameworkCore;
 using Models.Base;
+using pkuBite.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +45,7 @@ namespace Repository.Repository
         public T GetEntity(int id)
         {
             return _dbSet.Where(e => e.Id == id).FirstOrDefault();
-        }
+        }       
 
         public bool Save()
         {
@@ -55,6 +56,11 @@ namespace Repository.Repository
         public bool UpdateEntity(T entity)
         {
             return Save();
+        }
+
+        public User GetUser(string username)
+        {
+           return  _context.Users.Where(u => u.Username== username).FirstOrDefault();            
         }
     }
 }

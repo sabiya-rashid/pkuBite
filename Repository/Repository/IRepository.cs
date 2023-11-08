@@ -1,4 +1,5 @@
-﻿using System;
+﻿using pkuBite.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,6 +15,7 @@ namespace Repository.Repository
         bool CreateEntity(T entity);
         bool Save();
         bool DeleteEntity(T entity);
-        bool UpdateEntity(T entity);
+        bool UpdateEntity(T entity);  
+        User GetUser(string username); 
     }
 }

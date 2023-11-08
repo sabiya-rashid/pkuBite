@@ -18,7 +18,9 @@ namespace DbContext.EntityConfiguration
             builder.Property(x=>x.Description).HasMaxLength(500);
             builder.Property(x=> x.Price).HasMaxLength(100);
 
-            builder.HasOne(x=>x.SubCategory).WithMany(x=>x.FoodItems).HasForiegn
+            builder.HasOne(x=>x.SubCategory)
+                .WithMany(x=>x.FoodItems)
+                .HasForeignKey(x=> x.SubCategoryId);
             
 
         }

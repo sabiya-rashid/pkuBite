@@ -96,7 +96,24 @@ namespace Services.Services
 
         public Task<ApiResponse> GetSubcategoryByCat(int categoryId)
         {
-            throw new NotImplementedException();
+            var category = _context.Categories.Where(c=> c.Id == categoryId).FirstOrDefault();
+            if (category == null)
+            {
+                var response = new ApiResponse
+                {
+                    StatusCode = 400,
+                    Message = "No category"
+                };
+                return Task.FromResult<ApiResponse>(response);
+            }
+            var foodItem = _context.SubCategories.Where(s => s.CategoryId == categoryId).ToList();
+            var res = new ApiResponse
+            {
+                StatusCode = 200,
+                Message = "Subcategories retrieved successfully",
+                Result = foodItem
+            };
+            return Task.FromResult(res);
         }
 
         public Task<ApiResponse> Remove(int id)
